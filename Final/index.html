@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI System Development Lifecycle in Health</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+        }
+        
+        /* --- Page & Nav styles --- */
+        .page {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        .page.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Menu Styles --- */
+        .group:hover .group-hover\:block {
+            display: block;
+        }
+
+        /* --- Hero Flowchart Styles --- */
+        #lifecycle-flowchart-container {
+            display: flex;
+            justify-content: center;
+            padding: 1rem;
+            overflow-x: auto;
+        }
+        #lifecycle-flowchart {
+            display: inline-flex;
+            align-items: center;
+            min-width: max-content;
+        }
+        .flow-item {
+            position: relative;
+            height: 8rem; 
+            width: 10rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transition: transform 0.2s ease;
+            cursor: pointer;
+            flex-shrink: 0;
+            clip-path: polygon(0% 0%, 80% 0, 100% 50%, 80% 100%, 0% 100%);
+        }
+        .flow-item:not(:first-child) {
+            margin-left: -2rem;
+        }
+        .flow-item:hover {
+            transform: scale(1.05);
+            z-index: 5;
+        }
+
+        /* --- Interactive Elements --- */
+        .detail-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .detail-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        /* --- Tooltips for Hover Previews --- */
+        .tooltip {
+            position: relative;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 280px;
+            background-color: #333;
+            color: #fff;
+            text-align: left;
+            border-radius: 6px;
+            padding: 8px 12px;
+            position: absolute;
+            z-index: 10;
+            bottom: 115%;
+            left: 50%;
+            margin-left: -140px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* --- Modal & Overlay Styles --- */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .modal-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background-color: black;
+        }
+        .modal-content {
+            position: relative;
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+            transition: all 0.3s ease-in-out;
+            max-width: 48rem; /* 768px */
+            width: 100%;
+            transform: scale(0.95);
+            opacity: 0;
+        }
+         .modal-overlay:not(.hidden) .modal-content {
+            transform: scale(1);
+            opacity: 1;
+        }
+        #substage-overlay .modal-content {
+            max-width: 64rem; /* 1024px */
+        }
+        #substage-content-wrapper {
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="app" class="relative">
+        
+        <header class="bg-slate-800 text-white sticky top-0 z-40 shadow-lg">
+            <div class="container mx-auto flex justify-between items-center p-4">
+                <a href="#home" class="nav-link text-xl font-bold">The Lifecycle of AI for Healthcare</a>
+                <div class="relative">
+                    <button id="menu-button" class="font-bold text-lg pr-2 flex items-center">
+                        MENU 
+                        <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div id="menu-dropdown" class="absolute right-0 mt-2 w-56 bg-white text-black rounded-lg shadow-xl hidden">
+                        <a href="#home" class="nav-link block px-4 py-2 hover:bg-gray-100">Full Lifecycle</a>
+                        <a href="#about" class="nav-link block px-4 py-2 hover:bg-gray-100">About</a>
+                        <div class="relative group">
+                            <a href="#" class="block px-4 py-2 hover:bg-gray-100 flex justify-between items-center">
+                                <span>Stages</span> 
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            </a>
+                            <div class="absolute left-full -top-1 mt-0 w-56 bg-white rounded-lg shadow-xl hidden group-hover:block">
+                                 <a href="#inception" class="nav-link block px-4 py-2 hover:bg-gray-100">1. Inception</a>
+                                 <a href="#data" class="nav-link block px-4 py-2 hover:bg-gray-100">2. Data</a>
+                                 <a href="#model" class="nav-link block px-4 py-2 hover:bg-gray-100">3. Model</a>
+                                 <a href="#deployment" class="nav-link block px-4 py-2 hover:bg-gray-100">4. Deployment</a>
+                                 <a href="#management" class="nav-link block px-4 py-2 hover:bg-gray-100">5. Management</a>
+                            </div>
+                        </div>
+                         <a href="#elsi" class="nav-link block px-4 py-2 hover:bg-gray-100">ELSI</a>
+                         <a href="#learn-more" class="nav-link block px-4 py-2 hover:bg-gray-100">Learn more</a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <!-- Page: Home -->
+            <div id="page-home" class="page">
+                <section class="bg-slate-800 text-white text-center py-20">
+                    <div class="container mx-auto">
+                        <h2 class="text-4xl font-bold mb-4">The Lifecycle of AI for Healthcare</h2>
+                        <div id="lifecycle-flowchart-container">
+                            <div id="lifecycle-flowchart">
+                               <!-- Flowchart will be injected here -->
+                            </div>
+                        </div>
+                        <p class="max-w-3xl mx-auto mt-8">This research was funded by the National Institutes of Health Bridge to AI Voice project (1OT2OD032720-01)</p>
+                        <div class="flex justify-center space-x-8 mt-12 items-center flex-wrap">
+                            <img src="./sfu.png" alt="SFU Logo" class="h-16" />
+                            <img src="./bridge2AI.jpg" alt="Bridge2AI Voice Logo" class="h-16" />
+                            <img src="./hastingscenterlogo.jpg" alt="The Hastings Center Logo" class="h-16" />
+                            <img src="./nihlogo.png" alt="NIH Logo" class="h-16" />
+                        </div>
+                    </div>
+                </section>
+                <section id="about-main" class="bg-slate-700 text-white py-24">
+                    <div class="container mx-auto px-6 text-left max-w-4xl">
+                        <h2 class="text-4xl font-bold mb-12 text-center">About This Project</h2>
+                        <div class="space-y-12 text-slate-300">
+                            <div>
+                                <h3 class="text-3xl font-semibold mb-4 text-white">About Us</h3>
+                                <p class="text-lg leading-relaxed">We are a team of researchers in bioethics working as part of the NIH Common Fund’s Bridge2AI program. Bridge2AI is a bold initiative that aims to accelerate the ethical and widespread adoption of artificial intelligence (AI) in biomedical research. By fostering interdisciplinary collaboration, the initiative seeks to address complex challenges that exceed the reach of human intuition alone. Our team’s research focuses on understanding how AI is conceptualized and used within biomedical contexts, with a particular emphasis on ethical considerations across the entire AI development process. As part of this work, we conducted a study to explore what researchers mean when they refer to the “AI Lifecycle”. While the term is widely used, it often lacks a consistent or shared definition. We set out to investigate how the concept is understood across disciplines, and how these understandings reflect different values, priorities, and assumptions. To make our findings accessible and engaging, we created an online tool that presents our AI lifecycle model in an interactive format. Rather than offering a single, fixed definition of the AI lifecycle, our goal is to present multiple analyses of the model. These versions reflect diverse ways of interpreting and organizing the steps involved in the development, deployment, and oversight of AI systems in healthcare. The goal of our website is to offer a flexible and exploratory tool, one that encourages users to think critically about how different interpretations of the AI lifecycle can shape ethical analysis, research design, and policymaking. Whether you are a researcher, clinician, data scientist, or ethicist, we invite you to explore the lifecycle models and consider how they align with your own understanding of AI development and its challenges. This project is part of our ongoing commitment to advancing responsible and reflective AI in the service of biomedical innovation.</p>
+                            </div>
+                            <div>
+                                <h3 class="text-3xl font-semibold mb-4 text-white">Our Methodology</h3>
+                                <p class="text-lg leading-relaxed">Our research team conducted a scoping review to explore how the concept of the AI lifecycle is defined and applied within healthcare and biomedical literature. The goal was to map existing studies and identify how lifecycle stages are described, particularly with attention to ethical, legal, and social considerations. We searched four major databases—Ovid MEDLINE, Web of Science, EMBASE, IEEE, and ACM—using terms related to Artificial Intelligence, Lifecycle, and Healthcare. The search, limited to English-language papers published after 2010, yielded 2005 articles. After title and abstract screening, 208 articles were retained for full-text review, with 67 ultimately included based on criteria such as relevance to AI, healthcare, and the presence of a stepwise lifecycle description. A structured data extraction process was conducted using a collaboratively designed template that captured lifecycle stages, definitions, stakeholder roles, ethical issues, and value conflicts. Our team then developed an AI lifecycle model by comparing and synthesizing lifecycle stages and definitions from the studies included. This model features 5 main stages and 16 sub-stages, reflecting common patterns and terms used in the literature.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            
+            <!-- Page: About (This is now a separate page, as requested) -->
+            <div id="page-about" class="page">
+                 <section class="bg-slate-700 text-white py-24">
+                    <div class="container mx-auto px-6 text-left max-w-4xl">
+                        <h2 class="text-4xl font-bold mb-12 text-center">About This Project</h2>
+                        <div class="space-y-12 text-slate-300">
+                            <div>
+                                <h3 class="text-3xl font-semibold mb-4 text-white">About Us</h3>
+                                <p class="text-lg leading-relaxed">We are a team of researchers in bioethics working as part of the NIH Common Fund’s Bridge2AI program. Bridge2AI is a bold initiative that aims to accelerate the ethical and widespread adoption of artificial intelligence (AI) in biomedical research. By fostering interdisciplinary collaboration, the initiative seeks to address complex challenges that exceed the reach of human intuition alone. Our team’s research focuses on understanding how AI is conceptualized and used within biomedical contexts, with a particular emphasis on ethical considerations across the entire AI development process. As part of this work, we conducted a study to explore what researchers mean when they refer to the “AI Lifecycle”. While the term is widely used, it often lacks a consistent or shared definition. We set out to investigate how the concept is understood across disciplines, and how these understandings reflect different values, priorities, and assumptions. To make our findings accessible and engaging, we created an online tool that presents our AI lifecycle model in an interactive format. Rather than offering a single, fixed definition of the AI lifecycle, our goal is to present multiple analyses of the model. These versions reflect diverse ways of interpreting and organizing the steps involved in the development, deployment, and oversight of AI systems in healthcare. The goal of our website is to offer a flexible and exploratory tool, one that encourages users to think critically about how different interpretations of the AI lifecycle can shape ethical analysis, research design, and policymaking. Whether you are a researcher, clinician, data scientist, or ethicist, we invite you to explore the lifecycle models and consider how they align with your own understanding of AI development and its challenges. This project is part of our ongoing commitment to advancing responsible and reflective AI in the service of biomedical innovation.</p>
+                            </div>
+                            <div>
+                                <h3 class="text-3xl font-semibold mb-4 text-white">Our Methodology</h3>
+                                <p class="text-lg leading-relaxed">Our research team conducted a scoping review to explore how the concept of the AI lifecycle is defined and applied within healthcare and biomedical literature. The goal was to map existing studies and identify how lifecycle stages are described, particularly with attention to ethical, legal, and social considerations. We searched four major databases—Ovid MEDLINE, Web of Science, EMBASE, IEEE, and ACM—using terms related to Artificial Intelligence, Lifecycle, and Healthcare. The search, limited to English-language papers published after 2010, yielded 2005 articles. After title and abstract screening, 208 articles were retained for full-text review, with 67 ultimately included based on criteria such as relevance to AI, healthcare, and the presence of a stepwise lifecycle description. A structured data extraction process was conducted using a collaboratively designed template that captured lifecycle stages, definitions, stakeholder roles, ethical issues, and value conflicts. Our team then developed an AI lifecycle model by comparing and synthesizing lifecycle stages and definitions from the studies included. This model features 5 main stages and 16 sub-stages, reflecting common patterns and terms used in the literature.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            
+            <!-- Container for Stage Detail Pages -->
+            <div id="stage-pages-container"></div>
+            
+            <!-- Page: Learn More -->
+            <div id="page-learn-more" class="page">
+                 <section class="my-24 text-center bg-slate-800 text-white p-12 rounded-lg container mx-auto">
+                    <h2 class="text-3xl font-bold mb-4">Learn More</h2>
+                    <p class="max-w-2xl mx-auto mb-6">Explore our publications and resources to dive deeper into the ethical, legal, and social implications of AI in healthcare.</p>
+                    <a href="#" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-full transition-colors">Read Our Publications</a>
+                </section>
+            </div>
+
+            <!-- Page: ELSI Summary -->
+            <div id="page-elsi" class="page">
+                <section class="my-24 container mx-auto">
+                     <h2 class="text-3xl font-bold text-center mb-8 text-gray-800">The Ethical, Legal, and Social Implications of AI</h2>
+                     <div id="elsi-summary-grid" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                         <!-- ELSI summary will be injected here -->
+                     </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for Long Definitions -->
+    <div id="detail-modal" class="modal-overlay hidden">
+        <div class="modal-backdrop bg-opacity-75"></div>
+        <div class="modal-content p-8">
+            <h3 id="modal-title" class="text-2xl font-bold mb-4 text-gray-900"></h3>
+            <div id="modal-body" class="prose max-w-none text-gray-700"></div>
+            <button class="close-btn absolute top-4 right-4 text-gray-500 hover:text-gray-800">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // --- DATA STORE ---
+            const substagesData = {
+                inception: [
+                    { name: '1.1 Problem Identification', short: 'Identify the medical problem.', long: 'The inception stage (1) begins with 1.1 Problem Identification. This substage involves identifying and prioritizing a real-world healthcare need or needs, including potential health inequities, particularly for disadvantaged or marginalized subgroups. Collaboration among the development team and stakeholders including clinicians, patients, ethicists, and community representatives is essential to define the healthcare problem through diverse viewpoints, while ensuring the clinical, ethical, and technical considerations and overall goal and purpose of the system are met. This substage requires consideration of the healthcare-related needs that the AI tool will address, defining end users, and in which context the AI system can or cannot be applied. A literature review or formal assessment of existing knowledge should be conducted to characterizing the gasps and health disparities. This sub-stage also involves mapping and analyzing prior or existing solutions and potential failures to the particular healthcare problem, while also establishing a clear understanding of the relevant medical standards.' },
+                    { name: '1.2 Workflows & Feasibility', short: 'Assess workflows and feasibility.', long: 'The 1.2. Workflows & Feasibility sub-stage aims to assess the environment and setting in which the AI-driven tool will be deployed. This includes analyzing existing clinical workflows, identifying potential barriers to implementation, and evaluating the feasibility of integration of the AI tool within current healthcare practices and infrastructures. It is essential to evaluate the skills (digital literacy), training, human/material resources, technical infrastructures, and organizational support that are necessary for successful implementation. Assessing feasibility entails exploring business and regulatory considerations by screening for relevant regulatory frameworks and level of risks on the intended geographical setting of deployment of the AI system. Ethical approval from local regulatory bodies may be required prior to collecting medical data. In parallel, a thorough requirements assessment must be conducted for both functional specifications (e.g., inputs, outputs, performance thresholds, interfaces) and non-functional requirements (e.g., cybersecurity, performance, privacy, maintenance, interoperability, and computing environments). Establishing a fiscal and operational roadmap to support development and implementation is critical, while also remaining adaptable to necessary revisions.' },
+                    { name: '1.3 Conceptualization', short: 'Define the model’s objectives and scope.', long: 'The 1.3. Conceptualization sub-stage involves translating a defined healthcare problem into actionable design choices, performance goals, and implementation plans. The information gathered in the previous two substages can help guide the selection of data used to train the tool, the definition metrics strategies, and the selection of the most suitable AI model. A key element of this phase is the definition of equity-sensitive and clinical performance metrics, ensuring that the model not only meets performance accuracy standards but also aligns with health equity goals. This process involves specifying target outcomes related to both health and socioeconomic factors, selecting appropriate fairness metrics, and documenting the rationale behind these choices. The conceptualization sub-stage also calls for clarification of stakeholder roles and responsibilities to establish their involvement early on in the lifecycle, particularly when their engagement spans across various steps such as to data preparation, model training, and decision-making.' }
+                ],
+                data: [ 
+                    { name: '2.1 Data Acquisition', short: 'Acquire data through creation or collection.', long: 'The 2.1. Data Acquisition sub-stage is two-fold: data creation or data collection. This sub-stage refers to the acquisition of data required to train an AI model. Importantly, data can either be generated through clinical trials (data creation) or collected from existing sources such as clinical records or external databases (data collection). The acquired data must be gathered with attention to data quality and representativeness of the target population. A critical objective of this sub-stage is to ensure the dataset reflects sufficient demographic, socioeconomic, geographic, and genotypic characteristics of the targeted patient population, to mitigate the risk of bias and perpetuating health inequities. This process requires an interdisciplinary team to conduct exploratory analysis, contextualize data relative to the clinical problem, and assess its fitness for the AI system\'s use case.' },
+                    { name: '2.2 Data Preparation and Understanding', short: 'Prepare and understand data.', long: 'The 2.2 The data preparation and understanding sub-stage involves transforming raw data into a structured, standardized, and usable format that is suitable for training, validating, and testing AI models. This process involves a series of essential tasks such as data annotation, cleaning, de-identification (e.g., removing DICOM tags), normalizing, imputing missing values, resolving inconsistencies, and labeling datasets with the help of clinical experts. This sub-stage is critical to ensure quality, accuracy, and fairness of the model, with consideration for demographic and clinical representativeness. Data annotation procedures should follow standardized guidelines and include quality control measures to address inter-annotator variability. Ultimately, datasets must be aggregated and exported in standardized formats suitable with AI model inputs.' }
+                ],
+                model: [ 
+                    { name: '3.1 Select & Define Performance Metrics', short: 'Select performance metrics.', long: 'In the 3.1. Select & Define Performance Metrics sub-stage, the development team determines the criteria by which the AI model’s success will be measured, both technically and clinically. This includes selecting appropriate performance metrics such as accuracy, sensitivity, specificity, AUC, calibration, and fairness-related indicators like demographic parity or equalized odds, especially for sensitive variables such as race, ethnicity , and sex. AI developers must also define clinical decision thresholds, establish expected outcomes, and justify how these thresholds align with clinical utility and patient-centered goals.'},
+                    { name: '3.2 Model Selection', short: 'Select the appropriate model.', long: 'The 3.2. Model Selection sub-stage involves choosing the most appropriate algorithms and features for building the AI model, based on the nature of the data and the defined objectives. This includes the selection of the algorithm to train the AI model and the selection and engineering of the features, where data scientists determine which features are relevant to include, using statistical and domain-informed methods. Different types of data selected during the data stage (e.g., structured, sequential, image, voice or video) require different modeling approaches. At this sub-stage, decisions regarding data infrastructure and the model architecture are made to define the structural components, module functionalities, user interfaces, and required model characteristics such as scalability, availability, and security.'},
+                    { name: '3.3 Design, Development and Training', short: 'Design and train the model.', long: 'The 3.3. Design, Development and Training sub-stage emphasizes AI model design, training, and iterative refinements when the initial concept evolved into a functioning prototype. The process of coding and designing focuses on tool functionality and user interface. Then the AI model is developed through iterative cycles of coding, prototyping, and performance evaluation using various data types such as real or retrospective clinical data. Ultimately, model training must be done with datasets of sufficient size and quality to ensure strong model generalization.' },
+                    { name: '3.4 Testing and Validation', short: 'Test and validate the model.', long: 'The 3.4. Testing and Validation sub-stage ensures that the AI model is robust, accurate, and clinically relevant prior to deployment. This stage includes internal and external validation processes to ensure that the AI model generalizability, means the model performs reliably beyond the original training dataset and across diverse groups within the target population. Both retrospective and prospective evaluations may be employed, including “silent evaluations” when the tool is integrated in clinical settings to be tested without impacting patient care. Clinical verification in real-world settings may also compare performance to clinical gold standards. Such evaluations may also evaluate and refine user interfaces through collaboration with clinicians. The testing and validation sub-stage also encompasses rigorous quality assurance, bug detection, statistical evaluation, and calibration techniques of the final tool. AI model performance should also be tested across various subgroups to identify and address potential biases, with an emphasis on fairness and model explainability. This sub-step thus bridges the technical and ethical dimensions of model development, ensuring that AI tools are safe, fair, and effective in real clinical contexts and regarding different groups.'}
+                ],
+                deployment: [ 
+                    { name: '4.1 Regulatory Approval', short: 'Gain regulatory approval.', long: 'The 4.1. Regulatory Approval sub-stage is an essential phase prior to deployment in healthcare settings. Before an AI model can be marketed or adopted in healthcare settings, it must comply with applicable legal and regulatory frameworks under different regulatory categories such as medical devices and general AI tools. This process includes navigating complex regulatory pathways, such as those outlined by the U.S. Food and Drug Administration (FDA) or the European Union\'s Medical Device Regulation and AI Act. To achieve regulatory readiness, developers must ensure their models meet technical, clinical, and ethical standards through robust validation and documentation. Regulatory readiness pertains not only to performance evaluation, but also technical requirements such as resilient infrastructure, model governance, access control, auditability, privacy safeguards, and traceability mechanisms. Furthermore, developers must stay informed about evolving regulatory landscapes, guidance, and jurisdiction-specific requirements. Although regulatory approval, whether through clearance or registration, marks a formal authorization to introduce the product into clinical practice, it is only the first step toward widespread adoption.' },
+                    { name: '4.2 User Training and Education', short: 'Train users.', long: 'The 4.2. User Training and Education sub-stage is critical to ensuring that AI systems are effectively integrated into clinical practice and other healthcare contexts. This stage involves identifying the knowledge and training required for intended users, including how to make the AI system fits within existing workflows. To support effective adoption of the AI system, training programs should be tailored to the users’ needs, digital literacy and professional contexts, helping to build trust and confidence in implementing AI systems in daily clinical practice. Significant educational efforts are often necessary not only to communicate the technical capabilities and limitations of the AI model but also to manage user expectations and address any apprehensions.' },
+                    { name: '4.3 Implementation & Integration', short: 'Implement and integrate.', long: 'The 4.3. Implementation & Integration sub-stage marks the transition from development and regulatory approval to the operational use of AI models within healthcare settings. This critical phase includes deploying the model into real-world environments where it becomes embedded into clinical workflows and usable by clinicians and other end users. Effective deployment requires careful consideration of both technical and clinical integration, to optimize the AI system compatibility with the existing resources and infrastructures. AI system functionalities, model design choices (such as the decision-making process) and global AI system development processes should be clearly documented, to guarantee interpretability, explainability of the tool, to facilitate comprehension and usability for end users. Multiple stakeholder engagement across disciplines, from software developers, to regulators, to clinicians, is vital at this sub-stage to align the deployed solution with user needs and expectations. Additionally, successful implementation requires establishing governance mechanisms and procedures for future model maintenance.'}
+                ],
+                management: [ 
+                    { name: '5.1 Monitoring', short: 'Monitor the model.', long: 'The 5.1. Monitoring sub-stage is essential for ensuring the stability, safety, and fairness of AI-driven tools once implemented in real-world settings. After deployment, continuous and rigorous monitoring becomes critical to detect performance drift or other unintended consequences and alert development teams if performance shifts in require of intervention. This process involves defining a clear monitoring plan to regularly collect and analyze performance metrics, such as predictive accuracy, uncertainty, interpretability, clinical impact, and user adoption. Monitoring also provides an opportunity to continued evaluation of bias, flag ethical, legal or social issues, and ensure alignment with fairness and health equity objectives. The monitoring sub-stage requires not only technical capabilities to track model behavior (e.g., performance decay, software bugs, hardware failures) but also organizational processes and governance measures to assess, report, classify and address issues when they arise. Transparent communication with all stakeholders and documentation of monitoring activities are necessary enhance accountability and trust in the AI system.' },
+                    { name: '5.2 Maintenance', short: 'Maintain the model.', long: 'The 5.2. Maintenance sub-stage involves improvements to the AI system to address issues and determine when and how to update and refine the model or to decommission the AI system. AI models may be monitored and updated locally, regionally, or nationally. In some cases, when the AI system deviates from its defined objective, the AI model is subjected to be refined through additional development cycle. Regular maintenance ensures that deviations in model performance are addressed through processes like recalibration, retraining, feature input modification or model switching. This phase also involves the systematic integration of end-user feedback to refine interface usability or to improve its clinical impact. Importantly, maintenance is not a one-time task but an ongoing responsibility.' },
+                    { name: '5.3 Decommissioning', short: 'Decommission the model.', long: 'The 5.3. Decommissioning sub-stage marks the end of an AI system’s lifecycle. Once an AI tool becomes obsolete, irrelevant, or potentially harmful due to outdated algorithms, clinical irrelevance, or unresolvable issues, structured retirement procedures must be initiated. Although it may not be applicable to all health AI systems, the decommissioning sub-stage should be approach with the same level of rigor as earlier stages within the lifecycle.'}
+                ]
+            };
+
+            const elsiData = {
+                inception: [ 
+                    { name: 'Population representativeness', short: 'Ensuring the problem framing is relevant to diverse populations.', long: 'Population representativeness is not just a data-centric concern but begins in the inception stage. It is essential to ensure that the targeted population is not just a sample of convenience but a population that is aligned with the targeted population in real-world settings to avoid bias, drift, or assessment and defining the target population to later select a representative dataset.'},
+                    { name: 'Historical disparities in access to healthcare', short: 'Considering past inequities in healthcare access.', long: 'Misalignment with specific population needs, patient follow-up and adherence, or disease manifestation can differ between groups, as well as data use and ownership can also raise different concerns between various populations.'},
+                    { name: 'Data privacy risks and legal requirements', short: 'Identifying applicable laws and regulations.', long: 'AI developers’ team has to anticipate the type of approval or regulations applicable.'},
+                    { name: 'Lack of trust in AI', short: 'Addressing public and professional skepticism of AI.', long: 'The apparent design of AI systems designed for unethical or immoral purposes (social scoring, individual behavior prediction), or mass surveillance affect the general confidence and acceptance of AI-driven technologies.'},
+                    { name: 'Malalignment with specific population needs', short: 'Ensuring the AI addresses the actual needs of diverse groups.', long: 'The strategic vision of the project should reflect the broader medical challenges faced by countries and local needs.'},
+                    { name: 'Future accountability', short: 'Planning for long-term responsibility.', long: 'Future accountability should be accounted for the safety of the developed AI system, which contains a high degree of uncertainties.'},
+                    { name: 'Digital literacy of future user', short: 'Considering the tech skills of end-users.', long: 'To evaluate future users’ digital literacy allows developers to develop tools adapted to the digital skills of future users and avoid a lack of adoption.'},
+                    { name: 'Time and financial constraints', short: 'Managing project resources and timelines.', long: 'AI system development efforts tend to proceed under different pressures, largely related to finances and planning constraints that may lead to skip important steps or essential ethical, social and legal considerations.'},
+                    { name: 'Workforce displacement', short: 'Considering the impact on healthcare jobs.', long: 'Workforce displacement.'},
+                    { name: 'Team diversity', short: 'Ensuring a diverse development team.', long: 'Team diversity.'}
+                ],
+                data: [ 
+                    { name: 'Under-representation within the dataset', short: 'Ensuring the data reflects population diversity.', long: 'The AI model needs to be trained on datasets that match with the larger population in real-world settings. Misrepresentation or underrepresentation of certain segments of the population either numerically or in data quality may lead to inaccuracies, biases and discrimination.'},
+                    { name: 'De-identification and other privacy risks', short: 'Protecting patient privacy during data handling.', long: 'De-identification methods must be implemented to have data proven to be fallible and also because these data will potentially be shared for different AI tool projects. Potential collaboration across multiple organizations can rise the need even more complex data management procedures.'},
+                    { name: 'Data measurement bias', short: 'Avoiding biases in how data is measured.', long: 'Many factors can affect a dataset’s quality like limited or suboptimal quality of data annotations, lack of data collection standards, limited data resolution or level of details and missing clinical confounders.'},
+                    { name: 'Data annotation bias', short: 'Avoiding human bias in data labeling.', long: 'When data are labeled systematically different from a patient group to another, or when data from a patient group is mislabeled or when labels are undersized differently.'},
+                    { name: 'Transparency towards data provenance', short: 'Documenting the origin and journey of data.', long: '“Data provenance” has to be informed, specifications of the training dataset such as the content of the data collection, the criteria considered when evaluating the quality of the data, and any relevant temporal information related to data collection.'},
+                    { name: 'Internal bias of data annotators', short: 'Recognizing and mitigating annotator biases.', long: 'Because data annotation is based on human subjectivities, it is essential to consider whose perspectives, knowledge, and biases are being encoded.'},
+                    { name: 'Digital divide', short: 'Considering access to technology among different groups.', long: 'Placeholder long description.'},
+                    { name: 'Confounding bias', short: 'Accounting for external factors that can influence outcomes.', long: 'Placeholder long description.'}
+                ],
+                model: [ 
+                    { name: 'Bias in model development', short: 'Mitigating bias in algorithms.', long: 'Proxies are often deeply embedded in the data used to train AI models, leading to biased model development. Models should be evaluated for performance discrepancies between populations, and bias mitigation techniques, like re-sampling, should be employed.'},
+                    { name: 'Data privacy and cybersecurity risks', short: 'Protecting the model from security threats.', long: 'AI development teams should aim to create security mechanisms to ensure protection from cyberattacks and re-identification. In addition to regular audits to assess the model’s safety.'},
+                    { name: 'Selection bias', short: 'Avoiding bias in data selection for training.', long: 'Happens when features are not collected for specific populations or are more common in one group than another.'},
+                    { name: 'Evaluation bias', short: 'Ensuring fair and unbiased model evaluation.', long: 'Emerges when the metrics used to assess a model’s performance are not really-world or too simple, or when the metrics used to assess model performance are misaligned with the real-world context.'},
+                    { name: 'Model validity', short: 'Ensuring the model is accurate and robust.', long: 'Corresponds to data-related challenges in model training; like missing, implausible, incomplete or outlier data, are often classified as data quality issues. Poor data quality or quantity can degrade model performance and negatively affect interpretability, equity, fairness and reliability, while also introducing bias and limiting the utility of the tool.'},
+                    { name: 'Opacity of model decision-making and outputs', short: 'Addressing the "black box" nature of some models.', long: 'Most AI applications rely on complex and often opaque predictive models considered as “black boxes”. AI developers strive to incorporate eXplainable Artificial Intelligence (XAI) elements to improve transparency.'},
+                    { name: 'Model complexity and accessibility for end-users', short: 'Making the model understandable for users.', long: 'AI developers also need to establish a good balance between model performance and complexity. There is also a need to establish the necessary complexity within the model.'},
+                    { name: 'Considerations for future model deployment and maintenance', short: 'Planning for the model\'s future use.', long: 'Such as user expectations, acceptability and adherence, also potential future updates that are often overlooked during model development.'},
+                    { name: 'Model’s impact on clinical workflow', short: 'Assessing how the model will affect clinical practice.', long: 'The intended use of a device, including the skills required by its users, and usability considerations, can significantly impact its effectiveness.'},
+                    { name: 'Considerations for inclusive design', short: 'Designing the model to be usable by everyone.', long: 'Considerations for inclusive design.'},
+                    { name: 'Environmental impact and sustainability', short: 'Considering the energy consumption of the model.', long: 'Environmental impact and sustainability.'},
+                    { name: 'Development team diversity', short: 'Promoting diversity in the model development team.', long: 'Development team diversity.'}
+                ],
+                deployment: [ 
+                    { name: 'Integration into the clinical workflow', short: 'Seamlessly fitting the AI into clinical practice.', long: 'The integration of a new AI system should fits with existing structures, infrastructures and resources. Without the specific set up, hospitals will have a limited access to AI-powered care and if the AI system is not correctly integrated in regard with the other existing health technologies its implementation can lead to a loss of efficiency or accuracy. Adopting a flexible design in the early pilots, during this stage, developers can assess the initial vision of how effectively the AI tool fits into the clinical workflow.'},
+                    { name: 'Model interpretability and explainability', short: 'Communicating how the model works to users.', long: 'AI-driven technologies generally rely on highly complex prediction models. AI developers should include in their studies elements of “Explainable AI” (XAI) such as prediction accuracy, traceability or decision-making process, to allow a better understanding and use of the AI tool by HCP.'},
+                    { name: 'Transparency in the use of AI systems', short: 'Being open about when and how AI is used.', long: 'Health Care Organizations (HCOs) and other AI regulatory agencies must ensure accurate and transparent communication regarding the use of AI in medical solutions.'},
+                    { name: 'Delays in regulatory approval', short: 'Navigating the approval process efficiently.', long: 'The approval duration signify for AI developers a further entry barrier, requires developers to have the necessary financial means.'},
+                    { name: 'Equity in deployment and access', short: 'Ensuring fair access to the technology.', long: 'Means the AI tool should reach the populations who would need it the most, by considering barriers could hinder its deployment in these groups. Such considerations require anticipated discussions of how the AI system can be adopted in medical workflows and structures with low-resource settings, including community or rural healthcare facilities.'},
+                    { name: 'Affordability barriers', short: 'Making the technology economically accessible.', long: 'The deployment of a new AI system could impact higher cost or higher copay for the patient who may choose to opt out of AI-based treatments if they are not covered by their insurance.'},
+                    { name: 'Deskilling of HCPs', short: 'Considering the impact on healthcare professionals\' skills.', long: 'This phenomenon also known as automation bias refers to the tendency for practicians to systematically favoring automated recommendations, effectively deferring the decision-making expertise to the automated system or machine.'}
+                ],
+                management: [ 
+                    { name: 'AI system performance degradation', short: 'Monitoring for drops in performance over time.', long: 'When a model is tested in a controlled environment, it often performs well, but once it’s applied in real world settings, its performance can drop. Post-deployment stage offers a crucial opportunity to precisely measure performance degradation and analyze the factors of this drift.'},
+                    { name: 'Regulatory barriers in AI model updates', short: 'Navigating the rules for updating medical AI.', long: 'As is traditionally the case with pharmaceutical molecules, which are stable and stay unchanged over time, HCOs approves a given AI system regarding a specific time points, only in a “locked” or “frozen” state, meaning the AI model is not allowed to be updated and improved after the initial approbation.'},
+                    { name: 'Continuous evaluation of AI system fairness', short: 'Ongoing checks for fairness.', long: 'There are multiple notions of fairness, in terms of equality of outcomes, or for a patient the equality of opportunity to access to an AI tool. A series of metrics can be mobilized to assess the fairness of an AI system across social groups: “equal odds, predictive rate parity, counterfactual fairness…'},
+                    { name: 'Post-deployment privacy risks', short: 'Managing data privacy after the system is live.', long: 'The risk of re-identification still ongoing after deployment. Because the de-identification methods implemented to for have data proven to be fallible and also because these data will potentially be shared for different AI tool projects. Potential collaboration across multiple organizations can rise the need even more complex data management procedures.'},
+                    { name: 'Limits of AI model longevity', short: 'Considering the long-term viability of the model.', long: 'This consideration for updates also raise the question of obsolescence of AI systems, what is an AI-device technology lifespan? And what’s happen to AI-device technologies once they have reached the end of its useful lifespan?.'},
+                    { name: 'Evaluation bias', short: 'Avoiding bias in how the model\'s performance is evaluated.', long: 'Can also emerge from the metric used to quantify the models’ performance.'},
+                    { name: 'Need for quality control governance framework', short: 'Establishing a framework for quality control.', long: 'Need for quality control governance framework.'},
+                    { name: 'Liability and accountability mechanisms', short: 'Defining who is responsible for AI outcomes.', long: 'Liability and accountability mechanisms.'}
+                ]
+            };
+            
+            const lifecycleData = {
+                stages: [
+                    { id: 'inception', name: '1. Inception', color: 'bg-red-500', borderColor: 'border-red-600', pageBg: 'bg-red-50', pageBorder: 'border-red-200' },
+                    { id: 'data', name: '2. Data', color: 'bg-orange-500', borderColor: 'border-orange-600', pageBg: 'bg-orange-50', pageBorder: 'border-orange-200' },
+                    { id: 'model', name: '3. Model', color: 'bg-amber-500', borderColor: 'border-amber-600', pageBg: 'bg-amber-50', pageBorder: 'border-amber-200' },
+                    { id: 'deployment', name: '4. Deployment', color: 'bg-green-500', borderColor: 'border-green-600', pageBg: 'bg-green-50', pageBorder: 'border-green-200' },
+                    { id: 'management', name: '5. Management', color: 'bg-blue-500', borderColor: 'border-blue-600', pageBg: 'bg-blue-50', pageBorder: 'border-blue-200' }
+                ]
+            };
+
+            // --- DOM ELEMENTS ---
+            const mainContent = document.querySelector('main');
+            const flowchartContainer = document.getElementById('lifecycle-flowchart');
+            const elsiSummaryGrid = document.getElementById('elsi-summary-grid');
+            const menuButton = document.getElementById('menu-button');
+            const menuDropdown = document.getElementById('menu-dropdown');
+            
+            const detailModal = document.getElementById('detail-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalBody = document.getElementById('modal-body');
+            const modalCloseBtn = detailModal.querySelector('.close-btn');
+
+            // --- NAVIGATION ---
+            function showPage(pageId) {
+                document.querySelectorAll('.page').forEach(page => page.style.display = 'none');
+                const activePage = document.getElementById(`page-${pageId}`);
+                if (activePage) activePage.style.display = 'block';
+                window.scrollTo(0, 0); 
+            }
+
+            function handleNav(e) {
+                const link = e.target.closest('.nav-link');
+                if (link) {
+                    e.preventDefault();
+                    const pageId = link.getAttribute('href').substring(1);
+                    showPage(pageId);
+                    menuDropdown.classList.add('hidden');
+                }
+            }
+            
+            document.body.addEventListener('click', handleNav);
+            menuButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                menuDropdown.classList.toggle('hidden');
+            });
+            document.addEventListener('click', (e) => {
+                if (!menuButton.contains(e.target) && !menuDropdown.contains(e.target)) {
+                    menuDropdown.classList.add('hidden');
+                }
+            });
+
+            // --- RENDER FUNCTIONS ---
+            function renderFlowchart() {
+                lifecycleData.stages.forEach(stage => {
+                    const stageLink = document.createElement('a');
+                    stageLink.href = `#${stage.id}`;
+                    stageLink.className = `nav-link flow-item ${stage.color}`;
+                    stageLink.innerHTML = `<div class="font-bold text-lg">${stage.name.split('. ')[1]}</div>`;
+                    flowchartContainer.appendChild(stageLink);
+                });
+            }
+
+            function renderDetailPages() {
+                lifecycleData.stages.forEach(stage => {
+                    const page = document.createElement('div');
+                    page.id = `page-${stage.id}`;
+                    page.className = 'page container mx-auto';
+                    
+                    let substagesHTML = (substagesData[stage.id] || []).map((sub, index) => `
+                        <div class="detail-card bg-white p-4 rounded-lg border border-gray-200 shadow-sm tooltip" data-title="${sub.name}" data-long-def="${sub.long}">
+                            <h4 class="font-bold text-lg">${sub.name}</h4>
+                            <p class="text-gray-600">${sub.short}</p>
+                            <span class="tooltiptext">${sub.long}</span>
+                        </div>
+                    `).join('');
+
+                    let elsisHTML = (elsiData[stage.id] || []).map(elsi => `
+                        <div class="detail-card bg-white p-4 rounded-lg border border-gray-200 shadow-sm tooltip" data-title="${elsi.name}" data-long-def="${elsi.long}">
+                            <h4 class="font-bold text-lg">${elsi.name}</h4>
+                            <p class="text-gray-600">${elsi.short}</p>
+                             <span class="tooltiptext">${elsi.long}</span>
+                        </div>
+                    `).join('');
+
+                    page.innerHTML = `
+                        <section class="my-16 p-8 rounded-lg border-4 ${stage.pageBorder} ${stage.pageBg}">
+                            <h2 class="text-3xl font-bold mb-8 text-center">${stage.name}</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div>
+                                    <h3 class="text-2xl font-semibold mb-4 text-gray-700">Sub-stages</h3>
+                                    <div class="space-y-4">${substagesHTML}</div>
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-semibold mb-4 text-gray-700">ELSIs</h3>
+                                    <div class="space-y-4">${elsisHTML || '<p class="text-gray-500">No specific ELSIs listed.</p>'}</div>
+                                </div>
+                            </div>
+                        </section>
+                    `;
+                    mainContent.appendChild(page);
+                });
+            }
+            
+            function renderElsiSummary() {
+                elsiSummaryGrid.innerHTML = '';
+                lifecycleData.stages.forEach(stage => {
+                    const column = document.createElement('div');
+                    column.className = `p-4 rounded-lg ${stage.pageBg}`;
+                    column.innerHTML = `<h4 class="font-bold text-center mb-4">${stage.name.split('. ')[1]}</h4>
+                        <div class="space-y-2">
+                            ${(elsiData[stage.id] || []).map(elsi => `
+                                <div class="bg-white/50 p-2 rounded text-sm tooltip detail-card" data-title="${elsi.name}" data-long-def="${elsi.long}">
+                                    ${elsi.name}
+                                    <span class="tooltiptext">${elsi.short}</span>
+                                </div>
+                            `).join('') || '<p class="text-sm text-center opacity-70">N/A</p>'}
+                        </div>
+                    `;
+                    elsiSummaryGrid.appendChild(column);
+                });
+            }
+            
+            // --- MODAL & OVERLAY LOGIC ---
+            function showModal(title, longDef) {
+                modalTitle.textContent = title;
+                modalBody.innerHTML = `<p>${longDef}</p>`;
+                detailModal.classList.remove('hidden');
+            }
+            
+            function closeModal() {
+                 detailModal.classList.add('hidden');
+            }
+
+            document.addEventListener('click', (e) => {
+                const card = e.target.closest('.detail-card');
+                if (card) {
+                    showModal(card.dataset.title, card.dataset.longDef);
+                }
+                if (e.target.closest('.close-btn')) {
+                    closeModal();
+                }
+            });
+
+            // --- INITIALIZE APP ---
+            function initializeApp() {
+                renderFlowchart();
+                renderDetailPages();
+                renderElsiSummary();
+                showPage('home'); // Start on the home page
+            }
+
+            initializeApp();
+        });
+    </script>
+</body>
+</html>
