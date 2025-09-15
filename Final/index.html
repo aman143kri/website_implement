@@ -166,7 +166,8 @@
                                 <span>Stages</span> 
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                             </a>
-                            <div class="absolute left-full -top-1 mt-0 w-56 bg-white rounded-lg shadow-xl hidden group-hover:block">
+                            <!-- MODIFICATION: Changed submenu positioning from right-full to left-0 -translate-x-full -->
+                            <div class="absolute left-0 -translate-x-full -top-1 mt-0 w-56 bg-white rounded-lg shadow-xl hidden group-hover:block">
                                  <a href="#inception" class="nav-link block px-4 py-2 hover:bg-gray-100">1. Inception</a>
                                  <a href="#data" class="nav-link block px-4 py-2 hover:bg-gray-100">2. Data</a>
                                  <a href="#model" class="nav-link block px-4 py-2 hover:bg-gray-100">3. Model</a>
@@ -194,10 +195,10 @@
                         </div>
                         <p class="max-w-3xl mx-auto mt-8">This research was funded by the National Institutes of Health Bridge to AI Voice project (1OT2OD032720-01)</p>
                         <div class="flex justify-center space-x-8 mt-12 items-center flex-wrap">
-                            <img src="./sfu.png" alt="SFU Logo" class="h-16" />
+                            <img src="./sfu.png" alt="SFU Logo" class="h-12" />
                             <img src="./bridge2AI.jpg" alt="Bridge2AI Voice Logo" class="h-16" />
                             <img src="./hastingscenterlogo.jpg" alt="The Hastings Center Logo" class="h-16" />
-                            <img src="./nihlogo.png" alt="NIH Logo" class="h-16" />
+                            <img src="./nihlogo.png" alt="NIH Logo" class="h-12" />
                         </div>
                     </div>
                 </section>
@@ -218,7 +219,7 @@
                 </section>
             </div>
             
-            <!-- Page: About (This is now a separate page, as requested) -->
+            <!-- Page: About -->
             <div id="page-about" class="page">
                  <section class="bg-slate-700 text-white py-24">
                     <div class="container mx-auto px-6 text-left max-w-4xl">
@@ -387,9 +388,9 @@
 
             // --- NAVIGATION ---
             function showPage(pageId) {
-                document.querySelectorAll('.page').forEach(page => page.style.display = 'none');
+                document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
                 const activePage = document.getElementById(`page-${pageId}`);
-                if (activePage) activePage.style.display = 'block';
+                if (activePage) activePage.classList.add('active');
                 window.scrollTo(0, 0); 
             }
 
@@ -426,6 +427,7 @@
             }
 
             function renderDetailPages() {
+                const container = document.getElementById('stage-pages-container');
                 lifecycleData.stages.forEach(stage => {
                     const page = document.createElement('div');
                     page.id = `page-${stage.id}`;
@@ -447,22 +449,21 @@
                         </div>
                     `).join('');
 
+                    // MODIFICATION: Removed flex container for a natural block stacking layout
                     page.innerHTML = `
                         <section class="my-16 p-8 rounded-lg border-4 ${stage.pageBorder} ${stage.pageBg}">
                             <h2 class="text-3xl font-bold mb-8 text-center">${stage.name}</h2>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div>
-                                    <h3 class="text-2xl font-semibold mb-4 text-gray-700">Sub-stages</h3>
-                                    <div class="space-y-4">${substagesHTML}</div>
-                                </div>
-                                <div>
-                                    <h3 class="text-2xl font-semibold mb-4 text-gray-700">ELSIs</h3>
-                                    <div class="space-y-4">${elsisHTML || '<p class="text-gray-500">No specific ELSIs listed.</p>'}</div>
-                                </div>
+                            <div>
+                                <h3 class="text-2xl font-semibold mb-4 text-gray-700">Sub-stages</h3>
+                                <div class="space-y-4">${substagesHTML}</div>
+                            </div>
+                            <div class="mt-12">
+                                <h3 class="text-2xl font-semibold mb-4 text-gray-700">ELSIs</h3>
+                                <div class="space-y-4">${elsisHTML || '<p class="text-gray-500">No specific ELSIs listed.</p>'}</div>
                             </div>
                         </section>
                     `;
-                    mainContent.appendChild(page);
+                    container.appendChild(page);
                 });
             }
             
@@ -501,7 +502,7 @@
                 if (card) {
                     showModal(card.dataset.title, card.dataset.longDef);
                 }
-                if (e.target.closest('.close-btn')) {
+                if (e.target.closest('.close-btn') || e.target.classList.contains('modal-backdrop')) {
                     closeModal();
                 }
             });
@@ -519,3 +520,4 @@
     </script>
 </body>
 </html>
+
